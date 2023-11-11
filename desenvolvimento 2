@@ -1,0 +1,58 @@
+CREATE DATABASE Hospital;
+
+-- Utilização do Banco de Dados "Hospital"
+USE Hospital;
+
+-- Criação da Tabela "Setores"
+CREATE TABLE Setores (
+    IDSetor INT PRIMARY KEY AUTO_INCREMENT,
+    NomeSetor VARCHAR(50) NOT NULL,
+    SalarioMedio DECIMAL(10, 2)
+);
+
+-- Criação da Tabela "Funcionarios"
+CREATE TABLE Funcionarios (
+    IDFuncionario INT PRIMARY KEY AUTO_INCREMENT,
+    NomeFuncionario VARCHAR(50) NOT NULL,
+    IDSetor INT,
+    Salario DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (IDDepartamento) REFERENCES Departamentos(IDDepartamento)
+);
+
+-- Criação do Trigger
+DELIMITER //
+CREATE TRIGGER CalculaSalarioMedio
+AFTER INSERT ON Funcionarios
+FOR EACH ROW
+BEGIN
+    DECLARE totalSalario DECIMAL(10, 2);
+    DECLARE totalFuncionarios INT;
+    DECLARE novoSalarioMedio DECIMAL(10, 2);
+    
+    -- Calcula o total do salário do setor do novo funcionário
+    SELECT SUM(Salario) INTO totalSalario
+    FROM Funcionarios
+    WHERE IDSetor = NEW.IDSetor;
+    
+    -- Conta o número de funcionários no setor
+    SELECT COUNT(*) INTO totalFuncionarios
+    FROM Funcionarios
+    WHERE IDSetor = NEW.IDSetor;
+    
+    -- Calcula o novo salário médio
+    IF totalFuncionarios > 0 THEN
+        SET novoSalarioMedio = totalSalario / totalFuncionarios;
+    ELSE
+        SET novoSalarioMedio = 0;
+    END IF;
+    
+    -- Atualiza a tabela "Departamentos" com o novo salário médio
+    UPDATE Setores
+    SET SalarioMedio = novoSalarioMedio
+    WHERE IDSetor = NEW.IDSetor;
+END;
+//
+DELIMITER ;
+
+-- Exemplo de Inserção de Funcionário
+INSERT INTO Funcionarios (NomeFuncionario, IDSetor, Salario) VALUES ('João', 1, 3000.00);
