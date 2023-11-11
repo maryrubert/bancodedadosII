@@ -1,0 +1,7 @@
+REATE FUNCTION SomaDosClientesCadastrados (dataCadastro DATE)
+RETURNS INT
+BEGIN
+	DECLARE clientesTotal int;
+	SET clientesTotal = (SELECT COUNT(*) FROM clientes WHERE data_cadastro = dataCadastro);
+RETURN clientesTotal;
+END:
